@@ -1,5 +1,5 @@
 const userModel = require('../models/user.model');
-const foodPartnerModel = require('../models/foodPartner.model');
+const foodPartnerModel = require('../models/foodpartner.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -116,8 +116,8 @@ async function registerFoodPartner(req, res){
     res.status(201).json({
         message : 'Food Partner registered successfully',
         foodPartner : {
-            _id: foodParrtner._id,
-            emai: foodPartner.email,
+            _id: foodPartner._id,
+            email: foodPartner.email,
             name: foodPartner.name
         }
     })
