@@ -4,20 +4,48 @@ const {v4: uuid} = require('uuid');
 
 
 async function createFood(req, res) {
+    try {
+        // Check if file was uploaded
+        if (!req.files || !req.files.video || req.files.video.length === 0) {
+            return res.status(400).json({
+                message: "No video file uploaded. Please upload a file."
+            });
+        }
 
-    const fileUploadResult = await storageService.uploadFile(req.file.buffer, uuid());
+        // Check if foodPartner exists in request
+        if (!req.foodPartner || !req.foodPartner._id) {
+            return res.status(401).json({
+                message: "Food Partner not authenticated"
+            });
+        }
 
-    const foodItem = await foodModel.create({
-        name: req.body.name,
-        description: req.body.description,
-        video : fileUploadResult.url,
-        foodPartner: req.foodPartner._id
-    })
+        // Validate required fields
+        if (!req.body.name || !req.body.description) {
+            return res.status(400).json({
+                message: "Name and description are required"
+            });
+        }
 
-    res.status(201).json({
-        message: "Food item created successfully",
-        foodItem: foodItem
-    })
+        const fileUploadResult = await storageService.uploadFile(req.files.video[0].buffer, uuid());
+
+        const foodItem = await foodModel.create({
+            name: req.body.name,
+            description: req.body.description,
+            video : fileUploadResult.url,
+            foodPartner: req.foodPartner._id
+        })
+
+        res.status(201).json({
+            message: "Food item created successfully",
+            foodItem: foodItem
+        })
+    } catch (error) {
+        console.error('Error creating food item:', error);
+        res.status(500).json({
+            message: "Error creating food item",
+            error: error.message
+        })
+    }
 }
 
 async function getFoodItems(req, res) {

@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 
 async function registerUser(req, res) {
     
-    const { fullName, email, password } = req.body;
+    const { fullName, email, password, phone } = req.body;
 
     const isUserAlreadyExists = await userModel.findOne({
         email
@@ -22,7 +22,8 @@ async function registerUser(req, res) {
     const user = await userModel.create({
         fullName,
         email,
-        password : hashedPassword
+        password : hashedPassword,
+        phone
     })
 
     const token = jwt.sign({
@@ -36,7 +37,8 @@ async function registerUser(req, res) {
         user : {
             _id : user._id,
             email : user.email,
-            fullName : user.fullName
+            fullName : user.fullName,
+            phone : user.phone
         }
     })
 }
@@ -87,40 +89,55 @@ function logoutUser(req, res) {
 }
 
 async function registerFoodPartner(req, res){
-    const {name, email, password} = req.body;
+    try {
+        const {name, email, password, phone, businessName, address, restaurantType} = req.body;
 
-    const isAccountalreadyExists = await foodPartnerModel.findOne({
-        email
-    })
+        const isAccountalreadyExists = await foodPartnerModel.findOne({
+            email
+        })
 
-    if(isAccountalreadyExists){
-        return res.status(400).json({
-            message: 'Account already exists'
+        if(isAccountalreadyExists){
+            return res.status(400).json({
+                message: 'Account already exists'
+            })
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        const foodPartner = await foodPartnerModel.create({
+            name,
+            email,
+            password : hashedPassword,
+            phone,
+            businessName,
+            address,
+            restaurantType
+        })
+
+        const token = jwt.sign({
+            id : foodPartner._id
+        }, process.env.JWT_SECRET)
+
+        res.cookie('token', token)
+
+        res.status(201).json({
+            message : 'Food Partner registered successfully',
+            foodPartner : {
+                _id: foodPartner._id,
+                email: foodPartner.email,
+                name: foodPartner.name,
+                address: foodPartner.address,
+                contact: foodPartner.phone,
+                businessName: foodPartner.businessName,
+                restaurantType: foodPartner.restaurantType
+            }
+        })
+    } catch (error) {
+        console.error('Food Partner Registration error:', error);
+        res.status(500).json({
+            message: error.message || 'Registration failed'
         })
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const foodPartner = await foodPartnerModel.create({
-        name,
-        email,
-        password : hashedPassword
-    })
-
-    const token = jwt.sign({
-        id : foodPartner._id
-    }, process.env.JWT_SECRET)
-
-    res.cookie('token', token)
-
-    res.status(201).json({
-        message : 'Food Partner registered successfully',
-        foodPartner : {
-            _id: foodPartner._id,
-            email: foodPartner.email,
-            name: foodPartner.name
-        }
-    })
 }
 
 async function loginFoodPartner(req, res){
