@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
 import '../../styles/home.css'
+import axios from 'axios'
+import { Navigate, Link, useNavigate } from 'react-router-dom'
+
 
 const Home = () => {
   const [activeIndex, setActiveIndex] = useState(0)
@@ -7,38 +10,47 @@ const Home = () => {
   const isScrolling = useRef(false)
   const videoRefs = useRef([])
   const containerRef = useRef(null)
+  const [videos, setVideos] = useState([])
 
   // Sample video data
-  const videos = [
-    {
-      id: 1,
-      videoUrl: 'https://ik.imagekit.io/t5mdehnzi/790d4744-1d85-4349-9161-eb4ebac55a8d_xz0YMC4ob',
-      description: 'Amazing pizza from our store - Fresh ingredients and delicious taste!',
-      restaurantName: 'Pizza Paradise',
-      storePath: '/store/1'
-    },
-    {
-      id: 2,
-      videoUrl: 'https://ik.imagekit.io/t5mdehnzi/f239965d-b1e0-4cdf-8563-3b76521454f5_3kPJrVerk',
-      description: 'Fresh sushi rolls prepared by our expert chefs',
-      restaurantName: 'Sushi World',
-      storePath: '/store/2'
-    },
-    {
-      id: 3,
-      videoUrl: 'https://ik.imagekit.io/t5mdehnzi/ff40f5c2-0d61-4f3b-978a-5a33624f9d44_erpb5M304',
-      description: 'Delicious biryani with aromatic spices and tender meat',
-      restaurantName: 'Biryani House',
-      storePath: '/store/3'
-    },
-    {
-      id: 4,
-      videoUrl: 'https://ik.imagekit.io/t5mdehnzi/6c6a5234-fe92-449f-83fb-73983d41dcaf_wXqhok9L2',
-      description: 'Burgers that taste amazing and are made with premium ingredients',
-      restaurantName: 'Burger Station',
-      storePath: '/store/4'
-    }
-  ]
+  // const videos = [
+  //   {
+  //     id: 1,
+  //     videoUrl: 'https://ik.imagekit.io/t5mdehnzi/790d4744-1d85-4349-9161-eb4ebac55a8d_xz0YMC4ob',
+  //     description: 'Amazing pizza from our store - Fresh ingredients and delicious taste!',
+  //     restaurantName: 'Pizza Paradise',
+  //     storePath: '/store/1'
+  //   },
+  //   {
+  //     id: 2,
+  //     videoUrl: 'https://ik.imagekit.io/t5mdehnzi/f239965d-b1e0-4cdf-8563-3b76521454f5_3kPJrVerk',
+  //     description: 'Fresh sushi rolls prepared by our expert chefs',
+  //     restaurantName: 'Sushi World',
+  //     storePath: '/store/2'
+  //   },
+  //   {
+  //     id: 3,
+  //     videoUrl: 'https://ik.imagekit.io/t5mdehnzi/ff40f5c2-0d61-4f3b-978a-5a33624f9d44_erpb5M304',
+  //     description: 'Delicious biryani with aromatic spices and tender meat',
+  //     restaurantName: 'Biryani House',
+  //     storePath: '/store/3'
+  //   },
+  //   {
+  //     id: 4,
+  //     videoUrl: 'https://ik.imagekit.io/t5mdehnzi/6c6a5234-fe92-449f-83fb-73983d41dcaf_wXqhok9L2',
+  //     description: 'Burgers that taste amazing and are made with premium ingredients',
+  //     restaurantName: 'Burger Station',
+  //     storePath: '/store/4'
+  //   }
+  // ]
+
+  useEffect(() => {
+    axios.get("http://localhost:3000/api/food", { withCredentials: true })
+      .then(res => {
+        setVideos(res.data.foodItems)
+      })
+      .catch(err => console.log(err));
+  },[])
 
   // Add non-passive wheel listener using useEffect
   useEffect(() => {
@@ -54,6 +66,8 @@ const Home = () => {
       let newIndex = activeIndex + direction
 
       // Clamp the index
+      if (!videos || videos.length === 0) return
+
       newIndex = Math.max(0, Math.min(newIndex, videos.length - 1))
 
       if (newIndex !== activeIndex) {
@@ -72,6 +86,8 @@ const Home = () => {
       container.removeEventListener('wheel', handleWheel)
     }
   }, [activeIndex, videos.length])
+
+  
 
   // Scroll to active video and control playback
   useEffect(() => {
@@ -124,7 +140,7 @@ const Home = () => {
     >
       <div className="reels-scroll-container" ref={scrollContainerRef}>
         {videos.map((video, index) => (
-          <div key={video.id} className="reel-slide">
+          <div key={video._id} className="reel-slide">
             {/* Header Bar with Logo and Restaurant Name */}
             <div className="reel-header-bar">
               <img 
@@ -132,12 +148,12 @@ const Home = () => {
                 alt="Logo"
                 className="reel-header-logo"
               />
-              <h2 className="reel-header-title">{video.restaurantName}</h2>
+              <h2 className="reel-header-title">{video.name}</h2>
             </div>
 
             <video
               ref={el => videoRefs.current[index] = el}
-              src={video.videoUrl}
+              src={video.video}
               className="reel-media"
               loop
               muted
@@ -149,9 +165,12 @@ const Home = () => {
             <div className="reel-overlay">
               <div className="reel-info">
                 <p className="reel-description">{video.description}</p>
-                <a href={video.storePath} className="reel-button">
+                {/* <a href={video.storePath} className="reel-button">
                   Visit Store
-                </a>
+                </a> */}
+                <Link to={`/food-partner/${video.storePath}`} className="reel-button">
+                  Visit Store
+                </Link>
               </div>
             </div>
 

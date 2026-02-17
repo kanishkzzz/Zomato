@@ -14,4 +14,5 @@ router.post('/', authMiddleWare.authFoodPartnerMiddleware, upload.fields([{ name
 // GET /api/food/ [protected]
 router.get('/', authMiddleWare.authUserMiddleware, foodController.getFoodItems)
 
+
 module.exports = router;
