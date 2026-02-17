@@ -1,0 +1,152 @@
+@import "./variables.css";
+
+/* ===================== */
+/* Partner Profile Page  */
+/* ===================== */
+
+.partner-profile-container {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  background: var(--bg-secondary);
+}
+
+.partner-profile-card {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg-primary);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  transition: var(--transition-normal);
+}
+
+/* ===================== */
+/* Top Section           */
+/* ===================== */
+
+.partner-top {
+  display: flex;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-xl);
+  align-items: center;
+}
+
+.partner-logo {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: var(--bg-tertiary);
+  border: 2px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.partner-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.partner-name {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.partner-address {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* ===================== */
+/* Stats Section         */
+/* ===================== */
+
+.partner-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 0 var(--spacing-xl) var(--spacing-lg);
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--accent-color);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+/* ===================== */
+/* Divider               */
+/* ===================== */
+
+.partner-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0 var(--spacing-xl);
+}
+
+/* ===================== */
+/* Video Grid            */
+/* ===================== */
+
+.partner-video-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xl);
+}
+
+/* Real Video Element */
+.video-box {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  transition: transform var(--transition-fast),
+              border-color var(--transition-fast),
+              box-shadow var(--transition-fast);
+}
+
+.video-box:hover {
+  transform: scale(1.04);
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ===================== */
+/* Responsive            */
+/* ===================== */
+
+@media (max-width: 600px) {
+  .partner-profile-container {
+    padding: var(--spacing-lg);
+  }
+
+  .partner-profile-card {
+    max-width: 100%;
+  }
+
+  .partner-top {
+    padding: var(--spacing-lg);
+  }
+
+  .partner-video-grid {
+    padding: var(--spacing-lg);
+    gap: var(--spacing-xs);
+  }
+}
