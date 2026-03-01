@@ -1,5 +1,7 @@
 const foodModel = require('../models/food.model');
 const storageService = require('../services/storage.services');
+const likeModel = require('../models/like.model');
+const saveModel = require('../models/save.model');
 const {v4: uuid} = require('uuid');
 
 
@@ -63,7 +65,79 @@ async function getFoodItems(req, res) {
         });
     }
 }
+
+async function likeFood(req, res) {
+    try {
+        const { foodId } = req.body;
+        const user = req.user;
+
+        const isAlreadyLiked = await likeModel.findOne({ food: foodId, user: user._id });
+
+        if(isAlreadyLiked) {
+            await likeModel.deleteOne({ _id: isAlreadyLiked._id });
+
+            await likeModel.findOneAndUpdate({ _id: foodId }, { $inc: { likeCount: -1 } });
+
+            return res.status(200).json({
+                message: "Food item unliked successfully"
+            });
+        }
+
+        const like = await likeModel.create({
+            food: foodId,
+            user: user._id
+        });
+        await foodModel.findOneAndUpdate({ _id: foodId }, { $inc: { likeCount: 1 } });
+
+        res.status(201).json({
+            message: "Food item liked successfully",
+            like
+        });
+    } catch (error) {
+        console.error("Error liking food item:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
+async function saveFood(req, res) {
+    try {
+        const { foodId } = req.body;
+        const user = req.user;
+
+        const isAlreadySaved = await saveModel.findOne({ food: foodId, user: user._id });
+
+        if(isAlreadySaved) {
+            await saveModel.deleteOne({ _id: isAlreadySaved._id });
+
+            return res.status(200).json({
+                message: "Food item unsaved successfully"
+            });
+        }
+
+        const save = await saveModel.create({
+            food: foodId,
+            user: user._id
+        });
+
+        res.status(201).json({
+            message: "Food item saved successfully",
+            save
+        });
+    } catch (error) {
+        console.error("Error saving food item:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
 module.exports = {
     createFood,
-    getFoodItems
+    getFoodItems,
+    likeFood,
+    saveFood
 }

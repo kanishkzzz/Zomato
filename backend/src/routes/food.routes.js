@@ -14,5 +14,8 @@ router.post('/', authMiddleWare.authFoodPartnerMiddleware, upload.fields([{ name
 // GET /api/food/ [protected]
 router.get('/', authMiddleWare.authUserMiddleware, foodController.getFoodItems)
 
+router.post('/like', authMiddleWare.authUserMiddleware, foodController.likeFood);
+
+router.post('/save', authMiddleWare.authUserMiddleware, foodController.saveFood);
 
 module.exports = router;

@@ -1,0 +1,131 @@
+@import "./variables.css";
+
+/* ===================== */
+/* PAGE CONTAINER */
+/* ===================== */
+
+.create-food-container {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* ===================== */
+/* CARD WRAPPER */
+/* ===================== */
+
+.create-food-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 35px;
+  box-shadow: var(--shadow-md);
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ===================== */
+/* HEADER */
+/* ===================== */
+
+.create-food-title {
+  color: var(--accent-color);
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  text-align: center;
+}
+
+.create-food-subtitle {
+  font-size: var(--font-size-sm);
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 25px;
+}
+
+/* ===================== */
+/* FORM */
+/* ===================== */
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px;
+  font-size: var(--font-size-base);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: border var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-light);
+  outline: none;
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ===================== */
+/* BUTTON */
+/* ===================== */
+
+.form-button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent-color);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  letter-spacing: 0.5px;
+  transition: background var(--transition-fast), transform 0.1s ease;
+}
+
+.form-button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+.form-button:active {
+  transform: translateY(0px);
+}
+
+/* ===================== */
+/* MOBILE */
+/* ===================== */
+
+@media (max-width: 480px) {
+  .create-food-card {
+    padding: 25px;
+  }
+}

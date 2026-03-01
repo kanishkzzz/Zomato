@@ -37,6 +37,7 @@
 .partner-logo {
   width: 90px;
   height: 90px;
+  object-fit: cover;
   border-radius: 50%;
   background: var(--bg-tertiary);
   border: 2px solid var(--border-color);
@@ -110,7 +111,7 @@
 
 /* Real Video Element */
 .video-box {
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 3 / 4;
   width: 100%;
   object-fit: cover;
   border-radius: var(--radius-md);
