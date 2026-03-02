@@ -1,6 +1,6 @@
 const foodModel = require('../models/food.model');
 const storageService = require('../services/storage.services');
-const likeModel = require('../models/like.model');
+const likeModel = require('../models/likes.model')
 const saveModel = require('../models/save.model');
 const {v4: uuid} = require('uuid');
 

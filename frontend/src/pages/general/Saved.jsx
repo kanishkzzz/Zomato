@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import axios from 'axios'
 import { Link } from 'react-router-dom'
 import '../../styles/home.css'
 import BottomNav from '../../components/BottomNav'
 import { getSavedReelIds, storeSavedReelIds } from '../../utils/savedReels'
 
-const Home = () => {
+const Saved = () => {
   const [activeIndex, setActiveIndex] = useState(0)
   const [videos, setVideos] = useState([])
   const [likedReels, setLikedReels] = useState({})
@@ -27,16 +27,21 @@ const Home = () => {
     storeSavedReelIds(savedReelIds)
   }, [savedReelIds])
 
+  const savedVideos = useMemo(
+    () => videos.filter((video) => savedReelIds.includes(video._id)),
+    [videos, savedReelIds]
+  )
+
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
     const handleWheel = (e) => {
       e.preventDefault()
-      if (isScrolling.current || videos.length === 0) return
+      if (isScrolling.current || savedVideos.length === 0) return
 
       const direction = e.deltaY > 0 ? 1 : -1
-      const nextIndex = Math.max(0, Math.min(activeIndex + direction, videos.length - 1))
+      const nextIndex = Math.max(0, Math.min(activeIndex + direction, savedVideos.length - 1))
 
       if (nextIndex !== activeIndex) {
         setActiveIndex(nextIndex)
@@ -49,7 +54,7 @@ const Home = () => {
 
     container.addEventListener('wheel', handleWheel, { passive: false })
     return () => container.removeEventListener('wheel', handleWheel)
-  }, [activeIndex, videos.length])
+  }, [activeIndex, savedVideos.length])
 
   useEffect(() => {
     if (!scrollContainerRef.current) return
@@ -68,24 +73,24 @@ const Home = () => {
   }, [activeIndex])
 
   useEffect(() => {
-    if (activeIndex > videos.length - 1) {
+    if (activeIndex > savedVideos.length - 1) {
       setActiveIndex(0)
     }
-  }, [videos.length, activeIndex])
+  }, [savedVideos.length, activeIndex])
 
   const handleTouchStart = (e) => {
     touchStartY.current = e.touches[0].clientY
   }
 
   const handleTouchEnd = (e) => {
-    if (videos.length === 0) return
+    if (savedVideos.length === 0) return
 
     const touchEndY = e.changedTouches[0].clientY
     const diff = touchStartY.current - touchEndY
 
     if (Math.abs(diff) > 50) {
       const direction = diff > 0 ? 1 : -1
-      const nextIndex = Math.max(0, Math.min(activeIndex + direction, videos.length - 1))
+      const nextIndex = Math.max(0, Math.min(activeIndex + direction, savedVideos.length - 1))
       setActiveIndex(nextIndex)
     }
   }
@@ -97,12 +102,8 @@ const Home = () => {
     }))
   }
 
-  const toggleSave = (videoId) => {
-    setSavedReelIds((prev) => (
-      prev.includes(videoId)
-        ? prev.filter((id) => id !== videoId)
-        : [...prev, videoId]
-    ))
+  const removeSaved = (videoId) => {
+    setSavedReelIds((prev) => prev.filter((id) => id !== videoId))
   }
 
   return (
@@ -112,18 +113,17 @@ const Home = () => {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {videos.length === 0 && (
+      {savedVideos.length === 0 && (
         <section className="empty-state">
-          <h2>No reels yet</h2>
-          <p>Food videos will appear here once available.</p>
+          <h2>No saved reels</h2>
+          <p>Tap the bookmark icon on Home to save reels here.</p>
           <BottomNav />
         </section>
       )}
 
       <div className="reels-scroll-container" ref={scrollContainerRef}>
-        {videos.map((video, index) => {
+        {savedVideos.map((video, index) => {
           const isLiked = Boolean(likedReels[video._id])
-          const isSaved = savedReelIds.includes(video._id)
 
           return (
             <article key={video._id} className="reel-slide">
@@ -170,11 +170,11 @@ const Home = () => {
 
                 <button
                   type="button"
-                  className={`action-item save-btn ${isSaved ? 'saved' : ''}`}
-                  aria-label="Save"
-                  onClick={() => toggleSave(video._id)}
+                  className="action-item save-btn saved"
+                  aria-label="Unsave"
+                  onClick={() => removeSaved(video._id)}
                 >
-                  <i className={isSaved ? 'ri-bookmark-fill action-icon' : 'ri-bookmark-line action-icon'} />
+                  <i className="ri-bookmark-fill action-icon" />
                 </button>
               </div>
 
@@ -196,4 +196,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default Saved

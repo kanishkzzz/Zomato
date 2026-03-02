@@ -4,8 +4,14 @@
   box-sizing: border-box;
 }
 
-html, 
-body {
+html,
+body,
+#root {
   height: 100%;
   width: 100%;
+}
+
+body {
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  background: #efece7;
 }
