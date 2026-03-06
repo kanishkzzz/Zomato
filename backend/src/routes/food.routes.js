@@ -18,4 +18,9 @@ router.post('/like', authMiddleWare.authUserMiddleware, foodController.likeFood)
 
 router.post('/save', authMiddleWare.authUserMiddleware, foodController.saveFood);
 
+//Comment routes
+router.get('/:foodId/comments', authMiddleWare.authUserMiddleware, foodController.getCommentsByFood);
+router.post('/comment', authMiddleWare.authUserMiddleware, foodController.addComment);
+router.delete('/comment/:commentId', authMiddleWare.authUserMiddleware, foodController.deleteComment);
+
 module.exports = router;

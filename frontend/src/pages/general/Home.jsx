@@ -4,12 +4,16 @@ import { Link } from 'react-router-dom'
 import '../../styles/home.css'
 import BottomNav from '../../components/BottomNav'
 import { getSavedReelIds, storeSavedReelIds } from '../../utils/savedReels'
+import CommentsSheet from '../../components/CommentsSheet'
 
 const Home = () => {
   const [activeIndex, setActiveIndex] = useState(0)
   const [videos, setVideos] = useState([])
   const [likedReels, setLikedReels] = useState({})
   const [savedReelIds, setSavedReelIds] = useState(() => getSavedReelIds())
+  const [showComments, setShowComments] = useState(false)
+  const [selectedVideo, setSelectedVideo] = useState(null)
+  const [commentsByVideo, setCommentsByVideo] = useState({})
 
   const scrollContainerRef = useRef(null)
   const containerRef = useRef(null)
@@ -21,6 +25,7 @@ const Home = () => {
     axios.get('http://localhost:3000/api/food', { withCredentials: true })
       .then((res) => setVideos(res.data.foodItems || []))
       .catch((err) => console.log(err))
+
   }, [])
 
   useEffect(() => {
@@ -32,6 +37,7 @@ const Home = () => {
     if (!container) return
 
     const handleWheel = (e) => {
+      if (showComments) return
       e.preventDefault()
       if (isScrolling.current || videos.length === 0) return
 
@@ -49,7 +55,7 @@ const Home = () => {
 
     container.addEventListener('wheel', handleWheel, { passive: false })
     return () => container.removeEventListener('wheel', handleWheel)
-  }, [activeIndex, videos.length])
+  }, [activeIndex, videos.length, showComments])
 
   useEffect(() => {
     if (!scrollContainerRef.current) return
@@ -60,7 +66,7 @@ const Home = () => {
     videoRefs.current.forEach((video, index) => {
       if (!video) return
       if (index === activeIndex) {
-        video.play().catch(() => {})
+        video.play().catch(() => { })
       } else {
         video.pause()
       }
@@ -74,10 +80,12 @@ const Home = () => {
   }, [videos.length, activeIndex])
 
   const handleTouchStart = (e) => {
+    if (showComments) return
     touchStartY.current = e.touches[0].clientY
   }
 
   const handleTouchEnd = (e) => {
+    if (showComments) return
     if (videos.length === 0) return
 
     const touchEndY = e.changedTouches[0].clientY
@@ -105,6 +113,42 @@ const Home = () => {
     ))
   }
 
+  const openCommentSheet = (video) => {
+    setSelectedVideo(video)
+    setShowComments(true)
+    loadComments(video._id)
+  }
+  const closeCommentSheet = () => setShowComments(false)
+
+  const loadComments = async (videoId) => {
+    if (!videoId) return
+    try {
+      const res = await axios.get(`http://localhost:3000/api/food/${videoId}/comments`, { withCredentials: true })
+      const normalized = (res.data?.comments || []).map((item) => ({
+        id: item._id,
+        text: item.comment
+      }))
+
+      setCommentsByVideo((prev) => ({
+        ...prev,
+        [videoId]: normalized
+      }))
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  const addComment = async (videoId, text) => {
+    const commentText = text.trim()
+    if (!commentText) return
+    try {
+      await axios.post('http://localhost:3000/api/food/comment', { foodId: videoId, comment: commentText }, { withCredentials: true })
+      await loadComments(videoId)
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
   return (
     <div
       ref={containerRef}
@@ -124,6 +168,7 @@ const Home = () => {
         {videos.map((video, index) => {
           const isLiked = Boolean(likedReels[video._id])
           const isSaved = savedReelIds.includes(video._id)
+          const commentCount = commentsByVideo[video._id]?.length ?? video.commentCount ?? 0
 
           return (
             <article key={video._id} className="reel-slide">
@@ -160,12 +205,17 @@ const Home = () => {
                   onClick={() => toggleLike(video._id)}
                 >
                   <i className={isLiked ? 'ri-heart-fill action-icon' : 'ri-heart-line action-icon'} />
-                  <span>{video.likesCount || '24.2k'}</span>
+                  <span>{video.likesCount || 0}</span>
                 </button>
 
-                <button type="button" className="action-item" aria-label="Comment">
+                <button
+                  type="button"
+                  className="action-item"
+                  aria-label="Comment"
+                  onClick={() => openCommentSheet(video)}
+                >
                   <i className="ri-chat-1-line action-icon" />
-                  <span>{video.commentCount || '1.9k'}</span>
+                  <span>{commentCount}</span>
                 </button>
 
                 <button
@@ -192,6 +242,13 @@ const Home = () => {
           )
         })}
       </div>
+      <CommentsSheet
+        open={showComments}
+        onClose={closeCommentSheet}
+        video={selectedVideo}
+        comments={selectedVideo ? (commentsByVideo[selectedVideo._id] || []) : []}
+        onAddComment={addComment}
+      />
     </div>
   )
 }
