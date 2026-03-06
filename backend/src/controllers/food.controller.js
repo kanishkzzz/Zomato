@@ -2,6 +2,7 @@ const foodModel = require('../models/food.model');
 const storageService = require('../services/storage.services');
 const likeModel = require('../models/likes.model')
 const saveModel = require('../models/save.model');
+const commentModel = require('../models/comment.model');
 const {v4: uuid} = require('uuid');
 
 
@@ -52,10 +53,28 @@ async function createFood(req, res) {
 
 async function getFoodItems(req, res) {
     try {
-        const foodItems = await foodModel.find({});
+        const foodItems = await foodModel.find({}).lean();
+        const commentCounts = await commentModel.aggregate([
+            {
+                $group: {
+                    _id: '$reelId',
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const commentCountByFoodId = new Map(
+            commentCounts.map((item) => [String(item._id), item.count])
+        );
+
+        const foodItemsWithCounts = foodItems.map((item) => ({
+            ...item,
+            commentCount: commentCountByFoodId.get(String(item._id)) ?? item.commentCount ?? 0
+        }));
+
         res.status(200).json({
             message: "Food items fetched successfully",
-            foodItems
+            foodItems: foodItemsWithCounts
         });
     } catch (error) {
         console.error("Error fetching food items:", error);
@@ -135,9 +154,112 @@ async function saveFood(req, res) {
     }
 }
 
+async function getCommentsByFood(req, res) {
+    try {
+        const { foodId } = req.params;
+
+        const comments = await commentModel
+        .find({ reelId: foodId })
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .populate('userId', 'fullName')
+
+        res.status(200).json({
+            message: "Comments fetched successfully",
+            comments
+        })
+        
+    } catch (error) {
+        console.error("Error fetching comments:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
+async function addComment(req, res) {
+    try {
+        const {foodId, comment} = req.body;
+        const user = req.user;
+
+        if(!foodId || !comment || !comment.trim()) {
+            return res.status(400).json({
+                message: "Invalid input"
+            })
+        }
+
+        const foodItem = await foodModel.findById(foodId);
+        if(!foodItem) {
+            return res.status(404).json({
+                message: "Food item not found"
+            })
+        }
+
+        const createdComment = await commentModel.create({
+            reelId: foodId,
+            userId: user._id,
+            comment: comment.trim()
+        })
+
+        await foodModel.findByIdAndUpdate(foodId, { $inc: { commentCount: 1 } })
+
+        const populatedComment = await commentModel
+            .findById(createdComment._id)
+            .populate('userId', 'fullName')
+
+        res.status(201).json({
+            message: "Comment added successfully",
+            comment: populatedComment
+        }) 
+    }catch (error) {
+        console.error("Error adding comment:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
+async function deleteComment(req, res) {
+    try {
+        const { commentId } = req.params;
+        const user = req.user;
+
+        if(!commentId || !user) {
+            return res.status(400).json({
+                message: "Invalid input"
+            })
+        }
+
+        const comment = await commentModel.findById(commentId);
+
+        if(!comment) {
+            return res.status(404).json({
+                message: "Comment not found"
+            })
+        }
+
+        await commentModel.deleteOne({ _id: commentId });
+        await foodModel.findByIdAndUpdate(comment.reelId, { $inc: { commentCount: -1 } });
+        res.status(200).json({
+            message: "Comment deleted successfully"
+        })
+    }catch (error) {
+        console.error("Error deleting comment:", error);
+        res.status(500).json({
+            message: "Internal server error",
+            error: error.message
+        });
+    }
+}
+
 module.exports = {
     createFood,
     getFoodItems,
     likeFood,
-    saveFood
+    saveFood,
+    deleteComment,
+    addComment,
+    getCommentsByFood
 }
