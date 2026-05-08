@@ -23,9 +23,18 @@ const Home = () => {
 
   useEffect(() => {
     axios.get('http://localhost:3000/api/food', { withCredentials: true })
-      .then((res) => setVideos(res.data.foodItems || []))
-      .catch((err) => console.log(err))
+      .then((res) => {
+        const fetchedVideos = res.data.foodItems || []
+        setVideos(fetchedVideos)
 
+        const likedState = fetchedVideos.reduce((acc, video) => {
+          acc[video._id] = Boolean(video.likedByCurrentUser)
+          return acc
+        }, {})
+
+        setLikedReels(likedState)
+      })
+      .catch((err) => console.log(err))
   }, [])
 
   useEffect(() => {
@@ -98,11 +107,25 @@ const Home = () => {
     }
   }
 
-  const toggleLike = (videoId) => {
-    setLikedReels((prev) => ({
-      ...prev,
-      [videoId]: !prev[videoId]
-    }))
+  const toggleLike = async (videoId) => {
+    try {
+      const res = await axios.post('http://localhost:3000/api/food/like', { foodId: videoId }, { withCredentials: true })
+      const isLiked = Boolean(res.data?.liked)
+      const likeCount = Number(res.data?.likeCount || 0)
+
+      setLikedReels((prev) => ({
+        ...prev,
+        [videoId]: isLiked
+      }))
+
+      setVideos((prev) => prev.map((video) => (
+        video._id === videoId
+          ? { ...video, likeCount }
+          : video
+      )))
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const toggleSave = (videoId) => {
@@ -205,7 +228,7 @@ const Home = () => {
                   onClick={() => toggleLike(video._id)}
                 >
                   <i className={isLiked ? 'ri-heart-fill action-icon' : 'ri-heart-line action-icon'} />
-                  <span>{video.likesCount || 0}</span>
+                  <span>{video.likeCount || 0}</span>
                 </button>
 
                 <button

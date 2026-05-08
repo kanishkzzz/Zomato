@@ -16,6 +16,7 @@ export default function Profile() {
           `http://localhost:3000/api/food-partner/${id}`,
           { withCredentials: true }
         );
+        localStorage.setItem("partnerId", res.data.foodPartner._id);
         const partnerData = res.data.foodPartner || {};
         setProfile(partnerData);
         setFoodItems(partnerData.foodItems || []);

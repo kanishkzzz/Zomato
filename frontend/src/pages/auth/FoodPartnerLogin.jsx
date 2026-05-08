@@ -30,6 +30,7 @@ const FoodPartnerLogin = () => {
       const response = await axios.post('http://localhost:3000/api/auth/food-partner/login', formData, {
         withCredentials: true
       });
+      localStorage.setItem('token', response.data.token);
       console.log('Login Success:', response.data);
       setError('');
       navigate("/create-food"); // Redirect to create food page after successful login
@@ -44,7 +45,7 @@ const FoodPartnerLogin = () => {
     <div className="auth-container">
       <div className="auth-wrapper">
         <div className="auth-header">
-          <div className="auth-logo">Zomato</div>
+          <div className="auth-logo">FoodInt</div>
           <span className="partner-type-badge">Food Partner</span>
           <h1 className="auth-title">Partner Dashboard</h1>
           <p className="auth-subtitle">Access your restaurant management dashboard</p>

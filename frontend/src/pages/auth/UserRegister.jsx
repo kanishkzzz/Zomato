@@ -33,23 +33,22 @@ const UserRegister = () => {
       const response = await axios.post('http://localhost:3000/api/auth/user/register', formData, {
         withCredentials: true
       });
-
+      localStorage.setItem('token', response.data.token);
       console.log('Success:', response.data);
       setError('');
-      navigate("/"); // Redirect to home page after successful registration
+      navigate("/home"); // Redirect to home page after successful registration
     }catch(err) {
       const errorMessage = err.response?.data?.message || 'Registration failed';
       console.error('Error:', errorMessage);
       setError(errorMessage);
     }
-      
   }
 
   return (
     <div className="auth-container">
       <div className="auth-wrapper">
         <div className="auth-header">
-          <div className="auth-logo">Zomato</div>
+          <div className="auth-logo">FoodInt</div>
           <h1 className="auth-title">Create Your Account</h1>
           <p className="auth-subtitle">Join us to discover amazing food experiences</p>
         </div>
