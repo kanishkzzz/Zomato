@@ -30,9 +30,10 @@ const UserLogin = () => {
       const response = await axios.post('http://localhost:3000/api/auth/user/login', formData, {
         withCredentials: true
       });
+      localStorage.setItem('token', response.data.token);
       console.log('Login Success:', response.data);
       setError('');
-      navigate("/"); // Redirect to home page after successful login
+      navigate("/home"); // Redirect to home page after successful login
 
     } catch(err) {
       const errorMessage = err.response?.data?.message || 'Login failed';
@@ -45,7 +46,7 @@ const UserLogin = () => {
     <div className="auth-container">
       <div className="auth-wrapper">
         <div className="auth-header">
-          <div className="auth-logo">Zomato</div>
+          <div className="auth-logo">FoodInt</div>
           <h1 className="auth-title">Welcome Back</h1>
           <p className="auth-subtitle">Sign in to your account to continue</p>
         </div>

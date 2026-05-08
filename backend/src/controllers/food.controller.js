@@ -4,6 +4,8 @@ const likeModel = require('../models/likes.model')
 const saveModel = require('../models/save.model');
 const commentModel = require('../models/comment.model');
 const {v4: uuid} = require('uuid');
+const { readLikeCount, cacheLikeCount, incrementLikeCount } = require('../services/like-cache.service');
+const { publishLikeEvent } = require('../services/kafka.producer');
 
 
 async function createFood(req, res) {
@@ -34,7 +36,7 @@ async function createFood(req, res) {
         const foodItem = await foodModel.create({
             name: req.body.name,
             description: req.body.description,
-            video : fileUploadResult.url,
+            video: fileUploadResult.url,
             foodPartner: req.foodPartner._id
         })
 
@@ -53,6 +55,7 @@ async function createFood(req, res) {
 
 async function getFoodItems(req, res) {
     try {
+        const user = req.user;
         const foodItems = await foodModel.find({}).lean();
         const commentCounts = await commentModel.aggregate([
             {
@@ -63,14 +66,35 @@ async function getFoodItems(req, res) {
             }
         ]);
 
+        const likedEntries = await likeModel
+            .find({ user: user._id }, { food: 1})
+            .lean();
+
+        const likedFoodIds = new Set(
+            likedEntries.map((item) => String(item.food))
+        );
+
         const commentCountByFoodId = new Map(
             commentCounts.map((item) => [String(item._id), item.count])
         );
 
-        const foodItemsWithCounts = foodItems.map((item) => ({
-            ...item,
-            commentCount: commentCountByFoodId.get(String(item._id)) ?? item.commentCount ?? 0
+        const foodItemsWithCounts = await Promise.all(foodItems.map(async (item) => {
+            const persistedLikeCount = item.LikeCount || 0;
+            const cachedLikeCount = await readLikeCount(item._id);
+            const likeCount = cachedLikeCount ?? persistedLikeCount;
+
+            if(cachedLikeCount === null) {
+                await cacheLikeCount(item._id, persistedLikeCount);
+            }
+
+            return {
+                ...item,
+                likeCount,
+                commentCount: commentCountByFoodId.get(String(item._id)) ?? item.commentCount ?? 0,
+                likedByCurrentUser: likedFoodIds.has(String(item._id))
+            };
         }));
+        
 
         res.status(200).json({
             message: "Food items fetched successfully",
@@ -95,22 +119,54 @@ async function likeFood(req, res) {
         if(isAlreadyLiked) {
             await likeModel.deleteOne({ _id: isAlreadyLiked._id });
 
-            await likeModel.findOneAndUpdate({ _id: foodId }, { $inc: { likeCount: -1 } });
+            // await likeModel.findOneAndUpdate({ _id: foodId }, { $inc: { likeCount: -1 } });
+
+            const updatedFood = await foodModel.findByIdAndUpdate(
+                foodId,
+                { $inc: { likeCount: -1 } },
+                { new: true }
+            )
+
+            await incrementLikeCount(foodId, -1);
+            await publishLikeEvent({
+                eventType: 'food.unliked',
+                foodId,
+                userId: user._id,
+                likeCount: Math.max(updatedFood.likeCount || 0, 0),
+                happenedAt: new Date().toISOString()
+            })
+
 
             return res.status(200).json({
                 message: "Food item unliked successfully"
             });
         }
 
-        const like = await likeModel.create({
+        await likeModel.create({
             food: foodId,
             user: user._id
         });
-        await foodModel.findOneAndUpdate({ _id: foodId }, { $inc: { likeCount: 1 } });
+        // await foodModel.findOneAndUpdate({ _id: foodId }, { $inc: { likeCount: 1 } });
+
+         const updatedFood = await foodModel.findByIdAndUpdate(
+            foodId,
+            { $inc: { likeCount: 1 } },
+            { new: true }
+        );
+
+        await incrementLikeCount(foodId, 1);
+        await publishLikeEvent({
+            eventType: 'food.liked',
+            foodId,
+            userId: user._id,
+            likeCount: updatedFood?.likeCount || 1,
+            happenedAt: new Date().toISOString()
+        });
 
         res.status(201).json({
             message: "Food item liked successfully",
-            like
+            liked: true,
+            likeCount: updatedFood.likeCount || 1
         });
     } catch (error) {
         console.error("Error liking food item:", error);

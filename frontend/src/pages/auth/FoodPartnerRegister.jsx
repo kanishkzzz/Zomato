@@ -42,7 +42,7 @@ const FoodPartnerRegister = () => {
       }, {
         withCredentials: true
       });
-
+      localStorage.setItem('token', response.data.token);
       console.log('Success:', response.data);
       setError('');
       navigate('/create-food'); // Redirect to login after successful registration
@@ -68,7 +68,7 @@ const FoodPartnerRegister = () => {
     <div className="auth-container">
       <div className="auth-wrapper">
         <div className="auth-header">
-          <div className="auth-logo">Zomato</div>
+          <div className="auth-logo">FoodInt</div>
           <span className="partner-type-badge">Food Partner</span>
           <h1 className="auth-title">Grow Your Restaurant</h1>
           <p className="auth-subtitle">Partner with us and reach millions of customers</p>

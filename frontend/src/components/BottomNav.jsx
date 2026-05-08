@@ -9,7 +9,7 @@ const BottomNav = () => {
         <span>Saved</span>
       </NavLink>
 
-      <NavLink to="/" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+      <NavLink to="/home" end className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
         <i className="ri-home-5-line nav-icon" aria-hidden="true" />
         <span>Home</span>
       </NavLink>
