@@ -27,7 +27,7 @@ const FoodPartnerLogin = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/food-partner/login', formData, {
+      const response = await axios.post('http://localhost:4000/api/auth/food-partner/login', formData, {
         withCredentials: true
       });
       localStorage.setItem('token', response.data.token);

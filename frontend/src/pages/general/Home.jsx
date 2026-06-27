@@ -22,7 +22,7 @@ const Home = () => {
   const touchStartY = useRef(0)
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/food', { withCredentials: true })
+    axios.get('http://localhost:4000/api/food', { withCredentials: true })
       .then((res) => {
         const fetchedVideos = res.data.foodItems || []
         setVideos(fetchedVideos)
@@ -109,7 +109,7 @@ const Home = () => {
 
   const toggleLike = async (videoId) => {
     try {
-      const res = await axios.post('http://localhost:3000/api/food/like', { foodId: videoId }, { withCredentials: true })
+      const res = await axios.post('http://localhost:4000/api/food/like', { foodId: videoId }, { withCredentials: true })
       const isLiked = Boolean(res.data?.liked)
       const likeCount = Number(res.data?.likeCount || 0)
 
@@ -146,7 +146,7 @@ const Home = () => {
   const loadComments = async (videoId) => {
     if (!videoId) return
     try {
-      const res = await axios.get(`http://localhost:3000/api/food/${videoId}/comments`, { withCredentials: true })
+      const res = await axios.get(`http://localhost:4000/api/food/${videoId}/comments`, { withCredentials: true })
       const normalized = (res.data?.comments || []).map((item) => ({
         id: item._id,
         text: item.comment
@@ -165,7 +165,7 @@ const Home = () => {
     const commentText = text.trim()
     if (!commentText) return
     try {
-      await axios.post('http://localhost:3000/api/food/comment', { foodId: videoId, comment: commentText }, { withCredentials: true })
+      await axios.post('http://localhost:4000/api/food/comment', { foodId: videoId, comment: commentText }, { withCredentials: true })
       await loadComments(videoId)
     } catch (err) {
       console.log(err)

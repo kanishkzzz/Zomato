@@ -22,7 +22,7 @@ const CreateFood = () => {
     formData.append("description", description);
 
     try {
-      await axios.post("http://localhost:3000/api/food", formData, {
+      await axios.post("http://localhost:4000/api/food", formData, {
         withCredentials: true,
       });
       // alert("Food item created successfully!");

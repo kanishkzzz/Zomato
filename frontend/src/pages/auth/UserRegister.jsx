@@ -30,7 +30,7 @@ const UserRegister = () => {
     
 
     try{
-      const response = await axios.post('http://localhost:3000/api/auth/user/register', formData, {
+      const response = await axios.post('http://localhost:4000/api/auth/user/register', formData, {
         withCredentials: true
       });
       localStorage.setItem('token', response.data.token);
