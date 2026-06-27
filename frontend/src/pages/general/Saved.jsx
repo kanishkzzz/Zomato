@@ -22,7 +22,7 @@ const Saved = () => {
   const touchStartY = useRef(0)
 
   useEffect(() => {
-    axios.get('http://localhost:3000/api/food', { withCredentials: true })
+    axios.get('http://localhost:4000/api/food', { withCredentials: true })
       .then((res) => setVideos(res.data.foodItems || []))
       .catch((err) => console.log(err))
   }, [])
@@ -123,7 +123,7 @@ const Saved = () => {
   const loadComments = async (videoId) => {
     if (!videoId) return
     try {
-      const res = await axios.get(`http://localhost:3000/api/food/${videoId}/comments`, { withCredentials: true })
+      const res = await axios.get(`http://localhost:4000/api/food/${videoId}/comments`, { withCredentials: true })
       const normalized = (res.data?.comments || []).map((item) => ({
         id: item._id,
         text: item.comment
@@ -142,7 +142,7 @@ const Saved = () => {
     const commentText = text.trim()
     if (!commentText) return
     try {
-      await axios.post('http://localhost:3000/api/food/comment', { foodId: videoId, comment: commentText }, { withCredentials: true })
+      await axios.post('http://localhost:4000/api/food/comment', { foodId: videoId, comment: commentText }, { withCredentials: true })
       await loadComments(videoId)
     } catch (err) {
       console.log(err)

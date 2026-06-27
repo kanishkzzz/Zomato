@@ -13,7 +13,7 @@ export default function Profile() {
     const getPartner = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:3000/api/food-partner/${id}`,
+          `http://localhost:4000/api/food-partner/${id}`,
           { withCredentials: true }
         );
         localStorage.setItem("partnerId", res.data.foodPartner._id);

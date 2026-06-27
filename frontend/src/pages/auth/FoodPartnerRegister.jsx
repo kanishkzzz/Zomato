@@ -31,7 +31,7 @@ const FoodPartnerRegister = () => {
     e.preventDefault();
     
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/food-partner/register', {
+      const response = await axios.post('http://localhost:4000/api/auth/food-partner/register', {
         name: formData.ownerName,
         businessName: formData.restaurantName,
         email: formData.email,
